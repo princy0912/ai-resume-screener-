@@ -1,3 +1,10 @@
 streamlit
-pymupdf
+PyMuPDF
 fpdf
+pdfminer.six
+python-docx
+matplotlib
+numpy
+scikit-learn
+pandas
+regex
