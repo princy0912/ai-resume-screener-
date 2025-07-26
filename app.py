@@ -2,7 +2,28 @@
 import streamlit as st
 import fitz  # PyMuPDF
 import re
+from fpdf import FPDF
+import base64
 
+def generate_pdf(name, email, experience, skills, matched_skills, missing_skills):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", size=12)
+
+    pdf.cell(200, 10, txt="SmartHire Resume Screening Report", ln=True, align="C")
+    pdf.ln(10)
+
+    pdf.cell(200, 10, txt=f"Name: {name}", ln=True)
+    pdf.cell(200, 10, txt=f"Email: {email}", ln=True)
+    pdf.cell(200, 10, txt=f"Experience: {experience} years", ln=True)
+    pdf.ln(5)
+    pdf.cell(200, 10, txt=f"Skills: {', '.join(skills)}", ln=True)
+    pdf.cell(200, 10, txt=f"Matched Skills: {', '.join(matched_skills)}", ln=True)
+    pdf.cell(200, 10, txt=f"Missing Skills: {', '.join(missing_skills)}", ln=True)
+
+    file_name = f"{name.replace(' ', '_')}_screening_report.pdf"
+    pdf.output(file_name)
+    return file_name
 # Sample skill set to match from (can be expanded or customized)
 COMMON_SKILLS = {
     'python', 'java', 'c++', 'html', 'css', 'javascript', 'react', 'node.js',
