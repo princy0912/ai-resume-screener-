@@ -144,4 +144,4 @@ if results:
                 mime="application/pdf"
             )
 else:
-    st.info("Upload resumes and job description to begin screening.")
+    st.info("Upload resumes and job description to begin screening.") 
