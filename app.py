@@ -14,6 +14,14 @@ COMMON_SKILLS = {
 
 st.set_page_config(page_title="AI Resume Screener", layout="centered")
 st.title("📄 AI Resume Screening Tool")
+# --- Sidebar Filters ---
+st.sidebar.header("🔍 Filter Settings")
+
+min_exp = st.sidebar.number_input("Minimum Experience (in years)", min_value=0, max_value=20, value=0)
+must_have_skills = st.sidebar.text_input("Must-Have Skills (comma-separated)", value="")
+
+# Convert skills to a clean list
+must_have_skills_list = [s.strip().lower() for s in must_have_skills.split(",") if s.strip()]
 st.markdown("Upload your **resume (PDF)** and **job description (JD)** to get a match score.")
 
 resume_file = st.file_uploader("📎 Upload your Resume (PDF only)", type=["pdf"])
