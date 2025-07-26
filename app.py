@@ -1,13 +1,55 @@
 import streamlit as st
 import fitz  # PyMuPDF
-import base64
 import re
+import base64
 from fpdf import FPDF
 from io import BytesIO
-import pandas as pd
+import os
+from typing import List
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-import os
+import pandas as pd
+from PIL import Image
+
+# ------------------ Branding: Logo & Theme ------------------
+st.set_page_config(page_title="SmartHire Resume Screener", layout="wide")
+
+# Add custom logo
+logo_path = "logo.png"  # You can upload your own logo.png
+if os.path.exists(logo_path):
+    logo = Image.open(logo_path)
+    st.image(logo, width=150)
+
+# Add theme toggle
+theme = st.sidebar.selectbox("Choose Theme", ["Default", "Light", "Dark", "Blue"])
+
+if theme == "Light":
+    st.markdown("""
+        <style>
+        body { background-color: #f9f9f9; color: #000; }
+        .stButton button { background-color: #4CAF50; color: white; }
+        </style>
+    """, unsafe_allow_html=True)
+elif theme == "Dark":
+    st.markdown("""
+        <style>
+        body { background-color: #1E1E1E; color: #f1f1f1; }
+        .stButton button { background-color: #333; color: white; }
+        </style>
+    """, unsafe_allow_html=True)
+elif theme == "Blue":
+    st.markdown("""
+        <style>
+        body { background-color: #e8f0fe; color: #000; }
+        .stButton button { background-color: #4285F4; color: white; }
+        </style>
+    """, unsafe_allow_html=True)
+
+st.title("📄 SmartHire Resume Screener")
+st.markdown("""
+A smart AI-powered app to screen multiple resumes and match them with a job description.
+Upload resumes, filter by skills/experience/title/location, view matching percentage, and download report.
+""")
 
 # ---------------------- Branding Header ----------------------
 st.set_page_config(page_title="SmartHire Resume Screener", layout="wide")
