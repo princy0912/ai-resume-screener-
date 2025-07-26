@@ -88,4 +88,55 @@ if st.button("🔍 Analyze Resumes") and uploaded_files and jd_input:
                 "skills": list(resume_skills)
             }
 
-            st.subheader(f
+            st.subheader(f"📄 Results for: {parsed_data['name']}")
+            st.write(f"**Match Score:** {match_percent}%")
+            st.write(f"**JD Skills:** {', '.join(sorted(jd_skills))}")
+
+            st.markdown("### 🟢 Matched Skills")
+            for skill in sorted(matched_skills):
+                st.write(f"🟢 {skill}")
+
+            st.markdown("### 🔴 Missing Skills")
+            for skill in sorted(missing_skills):
+                st.write(f"🔴 {skill}")
+
+            st.subheader("📄 Parsed Resume Text Preview")
+            st.text_area("Resume Text", resume_text[:1000], height=200)
+
+            # Experience check
+            if parsed_data['experience_years'] < min_exp:
+                st.warning(f"❌ Candidate has only {parsed_data['experience_years']} years experience. Required: {min_exp}")
+            else:
+                st.success(f"✅ Experience requirement met: {parsed_data['experience_years']} years")
+
+            # Must-have skills
+            must_have_matched = [s for s in must_have_skills_list if s in parsed_data['skills']]
+            must_have_missing = [s for s in must_have_skills_list if s not in parsed_data['skills']]
+
+            st.subheader("⭐ Must-Have Skills Match")
+            st.write("🟢 Matched:", must_have_matched)
+            st.write("🔴 Missing:", must_have_missing)
+
+            # Download Report
+            if st.button(f"📥 Download Report for {parsed_data['name']}", key=uploaded_file.name):
+                pdf_file = generate_pdf(
+                    parsed_data['name'],
+                    parsed_data['email'],
+                    parsed_data['experience_years'],
+                    parsed_data['skills'],
+                    must_have_matched,
+                    must_have_missing,
+                    job_title
+                )
+                with open(pdf_file, "rb") as f:
+                    base64_pdf = base64.b64encode(f.read()).decode('utf-8')
+                    href = f'<a href="data:application/octet-stream;base64,{base64_pdf}" download="{pdf_file}">👉 Click to download {pdf_file}</a>'
+                    st.markdown(href, unsafe_allow_html=True)
+
+            # Match evaluation
+            if match_percent >= 70:
+                st.success("Great match! 🎯 You are ready to apply.")
+            elif match_percent >= 40:
+                st.warning("Decent match. You may want to improve your resume.")
+            else:
+                st.error("Low match. Consider adding more relevant skills.")
