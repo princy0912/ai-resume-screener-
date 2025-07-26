@@ -52,4 +52,4 @@ streamlit run app.py
 ## 📌 Project Status
 
 ✅ Basic Version Complete  
-🔜 Coming Soon: ATS-style filtering, PDF Export, Semantic Analysis Boost 
+🔜 Coming Soon: ATS-style filtering, PDF Export, Semantic Analysis Boost
