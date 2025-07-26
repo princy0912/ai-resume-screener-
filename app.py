@@ -9,7 +9,7 @@ from io import BytesIO
 
 def generate_pdf(name, email, experience, skills, matched_skills, missing_skills, match_percent): pdf = FPDF() pdf.add_page() pdf.set_font("Arial", size=12) pdf.cell(200, 10, txt="SmartHire Resume Screening Report", ln=True, align="C") pdf.ln(10) pdf.cell(200, 10, txt=f"Name: {name}", ln=True) pdf.cell(200, 10, txt=f"Email: {email}", ln=True) pdf.cell(200, 10, txt=f"Experience: {experience} years", ln=True) pdf.cell(200, 10, txt=f"Match Score: {match_percent}%", ln=True) pdf.ln(5) pdf.multi_cell(0, 10, txt=f"Skills: {', '.join(skills)}") pdf.multi_cell(0, 10, txt=f"Matched Skills: {', '.join(matched_skills)}") pdf.multi_cell(0, 10, txt=f"Missing Skills: {', '.join(missing_skills)}") buffer = BytesIO() pdf.output(buffer) return buffer
 
----------- Skill Set ----------
+----------- Skill Set -----------
 
 COMMON_SKILLS = { 'python', 'java', 'c++', 'html', 'css', 'javascript', 'react', 'node.js', 'machine learning', 'deep learning', 'nlp', 'pandas', 'numpy', 'sql', 'git', 'github', 'flask', 'django', 'tensorflow', 'keras', 'api', 'data analysis', 'data visualization', 'communication', 'problem solving', 'cloud', 'aws', 'azure', 'docker', 'kubernetes' }
 
