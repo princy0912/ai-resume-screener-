@@ -1,4 +1,9 @@
-import streamlit as st import fitz  # PyMuPDF import re import base64 from fpdf import FPDF from io import BytesIO
+import streamlit as st
+import fitz  # PyMuPDF
+import re 
+import base64 
+from fpdf import FPDF
+from io import BytesIO
 
 ---------- PDF Report Generator ----------
 
