@@ -88,6 +88,12 @@ resume_skills = set()
 match_percent = 0
 matched_skills = []
 missing_skills = []
+parsed_data = {
+    "name": "John Doe",
+    "email": "john@example.com",
+    "experience_years": 2,
+    "skills": []
+}
 
 if st.button("🔍 Analyze Match") and resume_file and jd_input:
     with st.spinner("Extracting text and matching skills..."):
@@ -101,33 +107,27 @@ if st.button("🔍 Analyze Match") and resume_file and jd_input:
         missing_skills = jd_skills - resume_skills
         match_percent = round((len(matched_skills) / len(jd_skills)) * 100, 2) if jd_skills else 0
 
+        parsed_data["skills"] = list(resume_skills)
+
         st.subheader("✅ Match Results")
         st.success(f"**Match Score:** {match_percent}%")
         st.info(f"**Skills in JD:** {', '.join(sorted(jd_skills))}")
         st.success(f"**Matched Skills:** {', '.join(sorted(matched_skills)) or 'None'}")
         st.warning(f"**Missing Skills:** {', '.join(sorted(missing_skills)) or 'None'}")
 
-# ------------------ Parsed Resume Data ------------------
-resume_skills = resume_skills if 'resume_skills' in locals() else set()
-parsed_data = {
-    "name": "John Doe",
-    "email": "john@example.com",
-    "experience_years": 2,
-    "skills": list(resume_skills)
-}
-
-# ------------------ Experience & Must-Have Filters ------------------
+# ------------------ Experience Filter ------------------
 if parsed_data['experience_years'] < min_exp:
     st.warning(f"❌ Candidate has only {parsed_data['experience_years']} years experience. Required: {min_exp}")
 else:
     st.success(f"✅ Experience requirement met: {parsed_data['experience_years']} years")
 
+# ------------------ Must-Have Skills Filter ------------------
 must_have_matched = [s for s in must_have_skills_list if s in parsed_data['skills']]
 must_have_missing = [s for s in must_have_skills_list if s not in parsed_data['skills']]
 
 st.subheader("⭐ Must-Have Skills Match:")
-st.success("✅ Matched: " + ", ".join(must_have_matched) if must_have_matched else "None")
-st.error("❌ Missing: " + ", ".join(must_have_missing) if must_have_missing else "None")
+st.success("✅ Matched: " + ", ".join(must_have_matched) if must_have_matched else "✅ None")
+st.error("❌ Missing: " + ", ".join(must_have_missing) if must_have_missing else "❌ None")
 
 # ------------------ Download PDF Report ------------------
 if st.button(f"📥 Download Report for {parsed_data['name']}", key=f"download_{parsed_data['name']}"):
@@ -146,8 +146,8 @@ if st.button(f"📥 Download Report for {parsed_data['name']}", key=f"download_{
     # Recommendation
     if match_percent >= 70:
         st.balloons()
-        st.success("Great match! 🎯 You’re ready to apply.")
+        st.success("🎯 Great match! You’re ready to apply.")
     elif match_percent >= 40:
-        st.warning("Decent match. Consider improving your resume.")
+        st.warning("⚠️ Decent match. Consider improving your resume.")
     else:
-        st.error("Low match. Try aligning your resume better with the JD.")
+        st.error("❌ Low match. Try aligning your resume better with the JD.")
