@@ -4,6 +4,7 @@ import re
 from fpdf import FPDF
 import base64
 
+# ---------- PDF Report Generator ----------
 def generate_pdf(name, email, experience, skills, matched_skills, missing_skills):
     pdf = FPDF()
     pdf.add_page()
@@ -24,6 +25,7 @@ def generate_pdf(name, email, experience, skills, matched_skills, missing_skills
     pdf.output(file_name)
     return file_name
 
+# ---------- Skill Set ----------
 COMMON_SKILLS = {
     'python', 'java', 'c++', 'html', 'css', 'javascript', 'react', 'node.js',
     'machine learning', 'deep learning', 'nlp', 'pandas', 'numpy', 'sql',
@@ -32,18 +34,22 @@ COMMON_SKILLS = {
     'cloud', 'aws', 'azure', 'docker', 'kubernetes'
 }
 
+# ---------- Page Setup ----------
 st.set_page_config(page_title="AI Resume Screener", layout="centered")
 st.title("📄 AI Resume Screening Tool")
+st.markdown("Upload your **resume (PDF)** and **job description (JD)** to get a match score.")
 
+# ---------- Sidebar Filters ----------
 st.sidebar.header("🔍 Filter Settings")
 min_exp = st.sidebar.number_input("Minimum Experience (in years)", min_value=0, max_value=20, value=0)
 must_have_skills = st.sidebar.text_input("Must-Have Skills (comma-separated)", value="")
+
 must_have_skills_list = [s.strip().lower() for s in must_have_skills.split(",") if s.strip()]
 
-st.markdown("Upload your **resume (PDF)** and **job description (JD)** to get a match score.")
 resume_file = st.file_uploader("📎 Upload your Resume (PDF only)", type=["pdf"])
 jd_input = st.text_area("📄 Paste the Job Description here", height=200)
 
+# ---------- Helper Functions ----------
 def extract_text_from_pdf(file):
     doc = fitz.open(stream=file.read(), filetype="pdf")
     text = ""
@@ -59,11 +65,11 @@ def extract_skills(text):
             found_skills.add(skill)
     return found_skills
 
+# ---------- Analysis ----------
 resume_skills = set()
-jd_skills = set()
+match_percent = 0
 matched_skills = []
 missing_skills = []
-match_percent = 0
 
 if st.button("🔍 Analyze Match") and resume_file and jd_input:
     with st.spinner("Extracting text and matching skills..."):
@@ -83,43 +89,49 @@ if st.button("🔍 Analyze Match") and resume_file and jd_input:
         st.write(f"**Matched Skills:** {', '.join(sorted(matched_skills)) or 'None'}")
         st.write(f"**Missing Skills:** {', '.join(sorted(missing_skills)) or 'None'}")
 
-        # Dummy extracted info (can integrate real extraction)
-        parsed_data = {
-            "name": "John Doe",
-            "email": "john@example.com",
-            "experience_years": 2,
-            "skills": list(resume_skills)
-        }
+# ---------- Dummy Parsed Resume Data ----------
+resume_skills = resume_skills if 'resume_skills' in locals() else set()
+parsed_data = {
+    "name": "John Doe",
+    "email": "john@example.com",
+    "experience_years": 2,
+    "skills": list(resume_skills)
+}
 
-        if parsed_data['experience_years'] < min_exp:
-            st.warning(f"❌ This candidate has only {parsed_data['experience_years']} years of experience. Minimum required: {min_exp}")
-        else:
-            st.success(f"✅ Experience requirement met: {parsed_data['experience_years']} years")
+# ---------- Experience Check ----------
+if parsed_data['experience_years'] < min_exp:
+    st.warning(f"❌ This candidate has only {parsed_data['experience_years']} years of experience. Minimum required: {min_exp}")
+else:
+    st.success(f"✅ Experience requirement met: {parsed_data['experience_years']} years")
 
-        must_matched = [s for s in must_have_skills_list if s in parsed_data['skills']]
-        must_missing = [s for s in must_have_skills_list if s not in parsed_data['skills']]
+# ---------- Must-Have Skills Check ----------
+must_have_matched = [s for s in must_have_skills_list if s in parsed_data['skills']]
+must_have_missing = [s for s in must_have_skills_list if s not in parsed_data['skills']]
 
-        st.subheader("⭐ Must-Have Skills Match:")
-        st.write("✅ Matched:", must_matched)
-        st.write("❌ Missing:", must_missing)
+st.subheader("⭐ Must-Have Skills Match:")
+st.write("✅ Matched:", must_have_matched)
+st.write("❌ Missing:", must_have_missing)
 
-        if st.button(f"📥 Download Report for {parsed_data['name']}", key=f"download_{parsed_data['name']}"):
-            pdf_file = generate_pdf(
-                parsed_data['name'],
-                parsed_data['email'],
-                parsed_data['experience_years'],
-                parsed_data['skills'],
-                must_matched,
-                must_missing
-            )
-            with open(pdf_file, "rb") as f:
-                base64_pdf = base64.b64encode(f.read()).decode('utf-8')
-                href = f'<a href="data:application/octet-stream;base64,{base64_pdf}" download="{pdf_file}">👉 Click here to download {pdf_file}</a>'
-                st.markdown(href, unsafe_allow_html=True)
+# ---------- Download Button ----------
+if st.button(f"📥 Download Report for {parsed_data['name']}", key=f"download_{parsed_data['name']}"):
+    pdf_file = generate_pdf(
+        parsed_data['name'],
+        parsed_data['email'],
+        parsed_data['experience_years'],
+        parsed_data['skills'],
+        must_have_matched,
+        must_have_missing
+    )
 
-            if match_percent >= 70:
-                st.success("Great match! 🎯 You are ready to apply.")
-            elif match_percent >= 40:
-                st.warning("Decent match. You may want to improve your resume.")
-            else:
-                st.error("Low match. Consider adding more relevant skills.")
+    with open(pdf_file, "rb") as f:
+        base64_pdf = base64.b64encode(f.read()).decode('utf-8')
+        href = f'<a href="data:application/octet-stream;base64,{base64_pdf}" download="{pdf_file}">👉 Click here to download {pdf_file}</a>'
+        st.markdown(href, unsafe_allow_html=True)
+
+    # Optional recommendation based on score
+    if match_percent >= 70:
+        st.success("Great match! 🎯 You are ready to apply.")
+    elif match_percent >= 40:
+        st.warning("Decent match. You may want to improve your resume.")
+    else:
+        st.error("Low match. Consider adding more relevant skills.")
