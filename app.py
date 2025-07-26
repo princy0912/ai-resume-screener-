@@ -81,6 +81,13 @@ if st.button("🔍 Analyze Match") and resume_file and jd_input:
         st.write(f"**Skills in JD:** {', '.join(sorted(jd_skills))}")
         st.write(f"**Matched Skills:** {', '.join(sorted(matched_skills)) or 'None'}")
         st.write(f"**Missing Skills:** {', '.join(sorted(missing_skills)) or 'None'}")
+# 👇 Dummy extraction from resume (you can replace this with actual parsing later)
+parsed_data = {
+    "name": "John Doe",
+    "email": "john@example.com",
+    "experience_years": 2,  # Replace with actual logic if available
+    "skills": list(resume_skills)  # Reuse extracted skills from earlier
+}
 # Experience filter check
 if parsed_data['experience_years'] < min_exp:
     st.warning(f"❌ This candidate has only {parsed_data['experience_years']} years of experience. Minimum required: {min_exp}")
