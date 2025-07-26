@@ -40,3 +40,16 @@ git clone https://github.com/princy0912/smarthire-resume-screener.git
 cd smarthire-resume-screener
 pip install -r requirements.txt
 streamlit run app.py
+---
+
+## 📬 Contact
+
+👩‍💻 Created with ❤️ by [Princy Chauhan](https://www.linkedin.com/in/princy-chauhan)  
+📧 princy.chauhan0912@gmail.com
+
+---
+
+## 📌 Project Status
+
+✅ Basic Version Complete  
+🔜 Coming Soon: ATS-style filtering, PDF Export, Semantic Analysis Boost
