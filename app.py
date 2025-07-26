@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import pdfminer 
 from sklearn.feature_extraction.text import TfidfVectorizer from sklearn.metrics.pairwise import cosine_similarity
 
------------------- PDF Report Generator ------------------
+#------------------ PDF Report Generator ------------------
 
 def generate_pdf(name, email, experience, skills, matched_skills, missing_skills): pdf = FPDF() pdf.add_page() pdf.set_font("Arial", size=12)
 
@@ -40,31 +40,31 @@ pdf.output(pdf_output)
 pdf_output.seek(0)
 return pdf_output
 
------------------- Resume Text Extraction ------------------
+#------------------ Resume Text Extraction ------------------
 
 def extract_text_from_pdf(uploaded_file): doc = fitz.open(stream=uploaded_file.read(), filetype="pdf") text = "" for page in doc: text += page.get_text() return text
 
------------------- Email Parser ------------------
+#------------------ Email Parser ------------------
 
 def extract_email(text): match = re.search(r"[\w.-]+@[\w.-]+", text) return match.group(0) if match else "Not Found"
 
------------------- Skill Matching ------------------
+#------------------ Skill Matching ------------------
 
 def match_skills(jd_skills, resume_text): resume_text_lower = resume_text.lower() matched = [skill for skill in jd_skills if skill.lower() in resume_text_lower] missing = [skill for skill in jd_skills if skill.lower() not in resume_text_lower] return matched, missing
 
------------------- Experience Extraction ------------------
+#------------------ Experience Extraction ------------------
 
 def extract_experience(text): exp_match = re.search(r'(\d+)\s*+?\s*(years|yrs)', text.lower()) if exp_match: return int(exp_match.group(1)) return 0
 
------------------- Skill Match Percentage ------------------
+#------------------ Skill Match Percentage------------------
 
 def get_match_percentage(matched_skills, total_skills): if not total_skills: return 0 return round(len(matched_skills) / len(total_skills) * 100)
 
------------------- Streamlit UI ------------------
+#------------------ Streamlit UI ------------------
 
 st.set_page_config(page_title="SmartHire Resume Screener", layout="wide") st.title("🤖 SmartHire AI Resume Screener")
 
-Dark mode toggle
+#Dark mode toggle
 
 is_dark_mode = st.sidebar.toggle("🌙 Dark Mode", value=False) if is_dark_mode: st.markdown(""" <style> body, .stApp { background-color: #121212; color: white; } .stTextInput>div>div>input { background-color: #333; color: white; } </style> """, unsafe_allow_html=True)
 
