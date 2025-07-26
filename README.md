@@ -45,7 +45,7 @@ streamlit run app.py
 ## 📬 Contact
 
 👩‍💻 Created with ❤️ by [Princy Chauhan](https://www.linkedin.com/in/princy-chauhan)  
-📧 princy.chauhan0912@gmail.com
+📧 princychauhan458@gmail.com
 
 ---
 
