@@ -3,7 +3,7 @@
 **SmartHire** is an AI-based resume screening tool that parses resumes and intelligently matches them against job descriptions using NLP techniques. It calculates a match score and highlights key skill overlaps, helping recruiters shortlist candidates efficiently.
 
 🔗 **Live Demo**: [Visit the deployed app](https://your-streamlit-app-link.streamlit.app)  
-📁 **GitHub**: [https://github.com/princy0912/smarthire-resume-screener](https://github.com/princy0912/smarthire-resume-screener)
+📁 **GitHub**: [https://github.com/princy0912/ai-resume-screener](https://github.com/princy0912/ai-resume-screener)
 
 ---
 
