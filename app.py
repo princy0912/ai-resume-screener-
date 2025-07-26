@@ -60,7 +60,19 @@ if st.button("🔍 Analyze Match") and resume_file and jd_input:
         st.write(f"**Skills in JD:** {', '.join(sorted(jd_skills))}")
         st.write(f"**Matched Skills:** {', '.join(sorted(matched_skills)) or 'None'}")
         st.write(f"**Missing Skills:** {', '.join(sorted(missing_skills)) or 'None'}")
+# Experience filter check
+if parsed_data['experience_years'] < min_exp:
+    st.warning(f"❌ This candidate has only {parsed_data['experience_years']} years of experience. Minimum required: {min_exp}")
+else:
+    st.success(f"✅ Experience requirement met: {parsed_data['experience_years']} years")
 
+# Must-have skills check
+matched_skills = [s for s in must_have_skills_list if s in parsed_data['skills']]
+missing_skills = [s for s in must_have_skills_list if s not in parsed_data['skills']]
+
+st.subheader("⭐ Must-Have Skills Match:")
+st.write("✅ Matched:", matched_skills)
+st.write("❌ Missing:", missing_skills)
         if match_percent >= 70:
             st.success("Great match! 🎯 You are ready to apply.")
         elif match_percent >= 40:
