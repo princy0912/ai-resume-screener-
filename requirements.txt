@@ -5,6 +5,6 @@ pdfminer.six
 python-docx
 matplotlib
 numpy
-scikit-learn
 pandas
+scikit-learn
 regex
