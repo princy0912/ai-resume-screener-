@@ -8,3 +8,6 @@ numpy
 pandas
 scikit-learn
 regex 
+sentence-transformers
+transformers
+torch
