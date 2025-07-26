@@ -94,6 +94,20 @@ missing_skills = [s for s in must_have_skills_list if s not in parsed_data['skil
 st.subheader("⭐ Must-Have Skills Match:")
 st.write("✅ Matched:", matched_skills)
 st.write("❌ Missing:", missing_skills)
+if st.button(f"📥 Download Report for {parsed_data['name']}", key=f"download_{parsed_data['name']}"):
+        pdf_file = generate_pdf(
+            parsed_data['name'],
+            parsed_data['email'],
+            parsed_data['experience_years'],
+            parsed_data['skills'],
+            matched_skills,
+            missing_skills
+        )
+
+        with open(pdf_file, "rb") as f:
+            base64_pdf = base64.b64encode(f.read()).decode('utf-8')
+            href = f'<a href="data:application/octet-stream;base64,{base64_pdf}" download="{pdf_file}">👉 Click here to download {pdf_file}</a>'
+            st.markdown(href, unsafe_allow_html=True)
         if match_percent >= 70:
             st.success("Great match! 🎯 You are ready to apply.")
         elif match_percent >= 40:
