@@ -1,13 +1,6 @@
 streamlit
 PyMuPDF
-fpdf
-pdfminer.six
-python-docx
-matplotlib
-numpy
-pandas
 scikit-learn
-regex 
-sentence-transformers
-transformers
-torch
+pandas
+fpdf
+Pillow
