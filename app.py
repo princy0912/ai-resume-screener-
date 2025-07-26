@@ -1,135 +1,147 @@
 import streamlit as st
 import fitz  # PyMuPDF
+import base64
 import re
 from fpdf import FPDF
-import base64
-import os
+from io import BytesIO
+import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
-from io import BytesIO
+import os
+
+# ---------------------- Branding Header ----------------------
+st.set_page_config(page_title="SmartHire Resume Screener", layout="wide")
+st.markdown("""
+    <style>
+    .main {
+        background-color: #f5f5f5;
+        font-family: 'Segoe UI', sans-serif;
+    }
+    .reportview-container .markdown-text-container {
+        padding-top: 0rem;
+    }
+    .logo {
+        width: 100px;
+        margin-bottom: 10px;
+    }
+    </style>
+    <div style='display: flex; align-items: center;'>
+        <img class='logo' src='https://i.imgur.com/YOUR_LOGO_URL.png'>
+        <h2 style='margin-left: 20px;'>SmartHire Resume Screener</h2>
+    </div>
+""", unsafe_allow_html=True)
+
+st.sidebar.title("Filters")
+
+# ------------------ File Uploads ------------------
+job_description = st.text_area("Paste the Job Description")
+resume_files = st.file_uploader("Upload Resume PDFs", type="pdf", accept_multiple_files=True)
+
+must_have_skills_input = st.sidebar.text_input("Must-Have Skills (comma-separated)")
+must_have_skills = [skill.strip().lower() for skill in must_have_skills_input.split(",") if skill.strip()]
+
+min_experience = st.sidebar.slider("Minimum Experience (Years)", 0, 20, 0)
+filter_job_title = st.sidebar.text_input("Filter by Job Title (optional)")
+filter_location = st.sidebar.text_input("Filter by Location (optional)")
+
+# ------------------ Extract Resume Text ------------------
+def extract_text_from_pdf(file):
+    text = ""
+    pdf = fitz.open(stream=file.read(), filetype="pdf")
+    for page in pdf:
+        text += page.get_text()
+    return text
+
+# ------------------ Skill Matching ------------------
+def get_match_percentage(jd, resume):
+    vectorizer = TfidfVectorizer().fit_transform([jd, resume])
+    vectors = vectorizer.toarray()
+    score = cosine_similarity([vectors[0]], [vectors[1]])[0][0]
+    return round(score * 100, 2)
+
+# ------------------ Skill Extraction ------------------
+def extract_skills(text):
+    words = re.findall(r"\b\w+\b", text.lower())
+    return list(set(words))
+
+def extract_email(text):
+    match = re.search(r"[\w\.-]+@[\w\.-]+", text)
+    return match.group() if match else "Not Found"
+
+def extract_experience(text):
+    match = re.search(r"(\d+)(\+)?\s+(years|yrs)\s+(of)?\s+(experience)?", text.lower())
+    return int(match.group(1)) if match else 0
 
 # ------------------ PDF Report Generator ------------------
 def generate_pdf(name, email, experience, skills, matched_skills, missing_skills):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Arial", size=12)
+
     pdf.cell(200, 10, txt="SmartHire Resume Screening Report", ln=True, align="C")
     pdf.ln(10)
-
-    pdf.set_font("Arial", size=10)
     pdf.cell(200, 10, txt=f"Name: {name}", ln=True)
     pdf.cell(200, 10, txt=f"Email: {email}", ln=True)
     pdf.cell(200, 10, txt=f"Experience: {experience} years", ln=True)
-    pdf.cell(200, 10, txt=f"Skills: {skills}", ln=True)
     pdf.ln(5)
-
-    pdf.set_text_color(0, 128, 0)
-    pdf.cell(200, 10, txt=f"Matched Skills: {', '.join(matched_skills)}", ln=True)
-    pdf.set_text_color(255, 0, 0)
-    pdf.cell(200, 10, txt=f"Missing Skills: {', '.join(missing_skills)}", ln=True)
-    pdf.set_text_color(0, 0, 0)
+    pdf.multi_cell(200, 10, txt=f"Skills: {', '.join(skills)}")
+    pdf.multi_cell(200, 10, txt=f"Matched Skills: {', '.join(matched_skills)}")
+    pdf.multi_cell(200, 10, txt=f"Missing Skills: {', '.join(missing_skills)}")
 
     pdf_output = BytesIO()
     pdf.output(pdf_output)
     pdf_output.seek(0)
     return pdf_output
 
-# ------------------ Helper Functions ------------------
-def extract_text_from_pdf(file):
-    text = ""
-    doc = fitz.open(stream=file.read(), filetype="pdf")
-    for page in doc:
-        text += page.get_text()
-    return text
-
-def extract_email(text):
-    match = re.search(r"[\w\.-]+@[\w\.-]+", text)
-    return match.group(0) if match else "N/A"
-
-def extract_name(text):
-    lines = text.strip().split('\n')
-    return lines[0] if lines else "N/A"
-
-def extract_experience(text):
-    match = re.search(r"(\d+)\+?\s+years", text.lower())
-    return int(match.group(1)) if match else 0
-
-def match_skills(resume_text, jd_text):
-    resume_text = resume_text.lower()
-    jd_text = jd_text.lower()
-    jd_skills = re.findall(r"[a-zA-Z0-9\+\#\.]+", jd_text)
-    matched = [skill for skill in jd_skills if skill in resume_text]
-    missing = [skill for skill in jd_skills if skill not in resume_text]
-    return matched, missing
-
-def get_match_score(text1, text2):
-    vectorizer = TfidfVectorizer()
-    tfidf_matrix = vectorizer.fit_transform([text1, text2])
-    score = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:2])[0][0]
-    return round(score * 100, 2)
-
-# ------------------ Streamlit App ------------------
-st.set_page_config(page_title="SmartHire Resume Screener", layout="wide")
-st.title("🧠 SmartHire: AI Resume Screener")
-
-with st.sidebar:
-    st.header("⚙️ Settings")
-    dark_mode = st.checkbox("🌙 Dark Mode")
-    st.markdown("---")
-    must_have_skills = st.text_input("Must-Have Skills (comma-separated)").lower().split(',')
-    min_experience = st.slider("Minimum Experience (years)", 0, 20, 0)
-    st.markdown("---")
-    jd_input = st.text_area("Paste Job Description (JD)", height=200)
-
-if dark_mode:
-    st.markdown("""<style>body { background-color: #0e1117; color: white; }</style>""", unsafe_allow_html=True)
-
-uploaded_files = st.file_uploader("Upload Resume PDFs (1 or more)", type="pdf", accept_multiple_files=True)
-
-if uploaded_files and jd_input:
-    results = []
-    for uploaded_file in uploaded_files:
-        resume_text = extract_text_from_pdf(uploaded_file)
+# ------------------ Screening Logic ------------------
+results = []
+if resume_files and job_description:
+    for resume in resume_files:
+        resume_text = extract_text_from_pdf(resume)
         email = extract_email(resume_text)
-        name = extract_name(resume_text)
         experience = extract_experience(resume_text)
-        matched_skills, missing_skills = match_skills(resume_text, jd_input)
-        match_score = get_match_score(resume_text, jd_input)
+        skills = extract_skills(resume_text)
 
-        if experience >= min_experience and all(skill in resume_text for skill in must_have_skills if skill):
-            results.append({
-                "Name": name,
+        matched_skills = [skill for skill in must_have_skills if skill in skills]
+        missing_skills = [skill for skill in must_have_skills if skill not in skills]
+
+        if experience >= min_experience:
+            if filter_job_title and filter_job_title.lower() not in resume_text.lower():
+                continue
+            if filter_location and filter_location.lower() not in resume_text.lower():
+                continue
+
+            match_score = get_match_percentage(job_description, resume_text)
+            result = {
+                "Name": resume.name.replace(".pdf", ""),
                 "Email": email,
                 "Experience": experience,
-                "Match %": match_score,
+                "Score": match_score,
                 "Matched Skills": matched_skills,
                 "Missing Skills": missing_skills,
-                "Resume Text": resume_text,
-                "PDF": uploaded_file
-            })
+                "Skills": skills,
+                "Report": generate_pdf(resume.name, email, experience, skills, matched_skills, missing_skills)
+            }
+            results.append(result)
 
-    if results:
-        st.subheader("📊 Ranked Results")
-        sorted_results = sorted(results, key=lambda x: x["Match %"], reverse=True)
-        for i, res in enumerate(sorted_results):
-            with st.expander(f"{i+1}. {res['Name']} ({res['Match %']}%)"):
-                st.markdown(f"**Email:** {res['Email']}")
-                st.markdown(f"**Experience:** {res['Experience']} years")
-                st.markdown(f"**Matched Skills:** {', '.join(res['Matched Skills'])}")
-                st.markdown(f"**Missing Skills:** {', '.join(res['Missing Skills'])}")
+# ------------------ Display Results ------------------
+if results:
+    st.success(f"{len(results)} Resumes matched the criteria.")
 
-                st.markdown("**Visual Match %:**")
-                st.progress(res['Match %'] / 100)
+    df = pd.DataFrame(results).sort_values(by="Score", ascending=False)
+    st.dataframe(df[["Name", "Email", "Experience", "Score"]])
 
-                if st.button(f"📥 Download Report - {res['Name']}", key=f"btn_{i}"):
-                    pdf_bytes = generate_pdf(res['Name'], res['Email'], res['Experience'], ', '.join(res['Matched Skills'] + res['Missing Skills']), res['Matched Skills'], res['Missing Skills'])
-                    b64 = base64.b64encode(pdf_bytes.read()).decode()
-                    href = f'<a href="data:application/octet-stream;base64,{b64}" download="{res["Name"]}_report.pdf">Download PDF</a>'
-                    st.markdown(href, unsafe_allow_html=True)
-    else:
-        st.warning("No resumes met the criteria.")
+    for res in results:
+        with st.expander(f"{res['Name']} - {res['Score']}% Match"):
+            st.markdown(f"**Email:** {res['Email']}")
+            st.markdown(f"**Experience:** {res['Experience']} years")
+            st.markdown(f"**Matched Skills:** {', '.join(res['Matched Skills'])}")
+            st.markdown(f"**Missing Skills:** {', '.join(res['Missing Skills'])}")
+            st.download_button(
+                label="Download PDF Report",
+                data=res['Report'],
+                file_name=f"{res['Name']}_report.pdf",
+                mime="application/pdf"
+            )
 else:
-    st.info("Please upload at least one resume and paste the job description.")
+    st.info("Upload resumes and job description to begin screening.")
